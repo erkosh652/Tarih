@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="kk" data-theme="light">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Қазақстан тарихы — Интерактивті оқу курсы мен AI платформасы</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
+            rel="stylesheet">
+        <style>
+            :root {
+                --primary: #4338ca;
+                --primary-hover: #3730a3;
+                --primary-light: #eef2ff;
+                --secondary: #0ea5e9;
+                --accent: #f59e0b;
+                --bg-body: #f8fafc;
+                --bg-card: #ffffff;
+                --text-main: #0f172a;
+                --text-muted: #64748b;
+                --border: #e2e8f0;
+                --success: #10b981;
+                --danger: #ef4444;
+                --radius-lg: 20px;
+                --radius-md: 12px;
+                --radius-sm: 8px;
+                --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+                --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+                --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+                --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            [data-theme="dark"] {
+                --primary: #6366f1;
+                --primary-hover: #4f46e5;
+                --primary-light: #1e1b4b;
+                --secondary: #38bdf8;
+                --accent: #fbbf24;
+                --bg-body: #0f172a;
+                --bg-card: #1e293b;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --border: #334155;
+                --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+                --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                --shadow-lg: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                background-color: var(--bg-body);
+                color: var(--text-main);
+                line-height: 1.7;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+
+            .progress-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 5px;
+                background: transparent;
+                z-index: 1000;
+            }
+
+            .progress-bar {
+                height: 100%;
+                background: linear-gradient(90deg, var(--secondary), var(--primary), var(--accent));
+                width: 0%;
+                transition: width 0.1s linear;
+            }
+
+            .floating-controls {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 999;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                align-items: center;
+            }
+
+            .theme-toggle-btn,
+            .ai-toggle-btn {
+                background: var(--primary);
+                color: white;
+                border: none;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                box-shadow: var(--shadow-lg);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                transition: var(--transition);
+            }
+
+            .ai-toggle-btn {
+                background: linear-gradient(135deg, var(--secondary), var(--primary));
+                font-size: 1.6rem;
+            }
+
+            .theme-toggle-btn:hover,
+            .ai-toggle-btn:hover {
+                transform: scale(1.1) rotate(10deg);
+            }
+
+            .ai-modal-container {
+                position: fixed;
+                bottom: 95px;
+                right: 24px;
+                width: 380px;
+                max-width: calc(100vw - 48px);
+                height: 520px;
+                max-height: calc(100vh - 120px);
+                background: var(--bg-card);
+                border: 2px solid var(--secondary);
+                border-radius: var(--radius-lg);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+                z-index: 1000;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+                animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            @keyframes popUp {
+                from {
+                    opacity: 0;
+                    transform: scale(0.8) translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+
+            .ai-modal-header {
+                background: linear-gradient(135deg, #1e1b4b, var(--primary));
+                color: white;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .ai-modal-header h3 {
+                font-size: 1.05rem;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .ai-close-btn {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 1.2rem;
+                cursor: pointer;
+            }
+
+            .ai-modal-body {
+                flex: 1;
+                padding: 16px;
+                background: var(--bg-body);
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .ai-modal-footer {
+                padding: 14px;
+                background: var(--bg-card);
+                border-top: 1px solid var(--border);
+                display: flex;
+                gap: 8px;
+                flex-direction: column;
+            }
+
+            .ai-quick-tags {
+                display: flex;
+                gap: 6px;
+                overflow-x: auto;
+                padding-bottom: 6px;
+            }
+
+            .ai-tag {
+                background: var(--primary-light);
+                color: var(--primary);
+                border: 1px solid var(--border);
+                padding: 6px 12px;
+                border-radius: 16px;
+                font-size: 0.78rem;
+                font-weight: 700;
+                white-space: nowrap;
+                cursor: pointer;
+            }
+
+            header {
+                background: linear-gradient(135deg, #090d16 0%, #1e1b4b 35%, #312e81 70%, #4338ca 100%);
+                color: white;
+                padding: 100px 20px 90px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            header::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+                pointer-events: none;
+            }
+
+            .header-badge {
+                display: inline-block;
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(12px);
+                padding: 8px 24px;
+                border-radius: 50px;
+                font-size: 0.85rem;
+                font-weight: 800;
+                margin-bottom: 24px;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                color: #e0e7ff;
+            }
+
+            h1 {
+                font-size: 3.4rem;
+                font-weight: 900;
+                margin-bottom: 22px;
+                line-height: 1.2;
+                letter-spacing: -1px;
+                background: linear-gradient(180deg, #ffffff 0%, #c7d2fe 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+
+            .subtitle {
+                font-size: 1.25rem;
+                color: #cbd5e1;
+                max-width: 800px;
+                margin: 0 auto 35px;
+                font-weight: 400;
+                line-height: 1.6;
+            }
+
+            .header-stats {
+                display: flex;
+                justify-content: center;
+                gap: 50px;
+                margin-top: 40px;
+                flex-wrap: wrap;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--accent);
+                text-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }
+
+            .stat-label {
+                font-size: 0.85rem;
+                color: #93c5fd;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }
+
+            .container {
+                max-width: 1140px;
+                margin: -50px auto 80px;
+                padding: 0 20px;
+                position: relative;
+                z-index: 10;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 30px;
+                margin-bottom: 35px;
+            }
+
+            .card {
+                background: var(--bg-card);
+                border-radius: var(--radius-lg);
+                padding: 36px;
+                box-shadow: var(--shadow-md);
+                border: 1px solid var(--border);
+                transition: var(--transition);
+            }
+
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .card-title {
+                font-size: 1.45rem;
+                font-weight: 800;
+                color: var(--text-main);
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .card-title::before {
+                content: '';
+                display: inline-block;
+                width: 6px;
+                height: 26px;
+                background: var(--primary);
+                border-radius: 3px;
+            }
+
+            p {
+                color: var(--text-muted);
+                margin-bottom: 18px;
+                font-size: 1rem;
+            }
+
+            ul {
+                list-style: none;
+            }
+
+            ul li {
+                position: relative;
+                padding-left: 28px;
+                margin-bottom: 14px;
+                color: var(--text-main);
+                font-weight: 500;
+                font-size: 0.98rem;
+            }
+
+            ul li::before {
+                content: "✓";
+                position: absolute;
+                left: 0;
+                color: var(--success);
+                font-weight: 800;
+                font-size: 1.1rem;
+            }
+
+            .hero-figure {
+                margin: 0;
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                box-shadow: var(--shadow-md);
+            }
+
+            .hero-figure img {
+                width: 100%;
+                height: 360px;
+                object-fit: cover;
+                display: block;
+                transition: var(--transition);
+            }
+
+            .hero-figure:hover img {
+                transform: scale(1.02);
+            }
+
+            figcaption {
+                background: var(--primary-light);
+                padding: 14px;
+                text-align: center;
+                font-size: 0.9rem;
+                color: var(--text-muted);
+                font-style: italic;
+                border-top: 1px solid var(--border);
+            }
+
+            .form-card {
+                background: linear-gradient(135deg, var(--bg-card) 0%, var(--primary-light) 100%);
+                border: 2px solid var(--primary);
+                border-radius: var(--radius-lg);
+                padding: 40px;
+                margin-bottom: 35px;
+                box-shadow: var(--shadow-lg);
+            }
+
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .form-group label {
+                font-weight: 700;
+                font-size: 0.9rem;
+                color: var(--text-main);
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                padding: 14px 18px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                background: var(--bg-card);
+                color: var(--text-main);
+                font-size: 0.95rem;
+                outline: none;
+                transition: var(--transition);
+                font-family: inherit;
+            }
+
+            .form-group input:focus,
+            .form-group select:focus,
+            .form-group textarea:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.15);
+            }
+
+            .btn-whatsapp {
+                background: #25D366;
+                color: white;
+                font-weight: 800;
+                padding: 16px 36px;
+                border-radius: var(--radius-md);
+                border: none;
+                cursor: pointer;
+                transition: var(--transition);
+                font-size: 1.05rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                margin-top: 25px;
+                width: 100%;
+                box-shadow: 0 10px 20px rgba(37, 211, 102, 0.25);
+            }
+
+            .btn-whatsapp:hover {
+                background: #1da851;
+                transform: translateY(-2px);
+                box-shadow: 0 14px 24px rgba(37, 211, 102, 0.35);
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                background: var(--bg-card);
+            }
+
+            th,
+            td {
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--border);
+                font-size: 0.95rem;
+            }
+
+            th {
+                background-color: var(--primary-light);
+                color: var(--text-main);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.85rem;
+                letter-spacing: 0.5px;
+            }
+
+            tr:last-child td {
+                border-bottom: none;
+            }
+
+            .timeline {
+                position: relative;
+                padding: 20px 0;
+                margin-top: 20px;
+            }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 50%;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background: var(--border);
+                transform: translateX(-50%);
+            }
+
+            .timeline-item {
+                display: flex;
+                justify-content: flex-end;
+                padding-right: 30px;
+                position: relative;
+                margin-bottom: 40px;
+                width: 50%;
+            }
+
+            .timeline-item:nth-child(even) {
+                align-self: flex-end;
+                justify-content: flex-start;
+                padding-right: 0;
+                padding-left: 30px;
+                margin-left: 50%;
+            }
+
+            .timeline-dot {
+                position: absolute;
+                right: -8px;
+                top: 15px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: var(--primary);
+                border: 4px solid var(--bg-card);
+                box-shadow: 0 0 0 3px var(--primary);
+                z-index: 2;
+            }
+
+            .timeline-item:nth-child(even) .timeline-dot {
+                left: -8px;
+                right: auto;
+            }
+
+            .timeline-content {
+                background: var(--bg-card);
+                padding: 24px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-sm);
+                max-width: 450px;
+            }
+
+            .timeline-date {
+                font-weight: 800;
+                color: var(--primary);
+                font-size: 1.1rem;
+                margin-bottom: 6px;
+            }
+
+            .flashcards-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .flashcard {
+                background-color: transparent;
+                height: 180px;
+                perspective: 1000px;
+                cursor: pointer;
+            }
+
+            .flashcard-inner {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                text-align: center;
+                transition: transform 0.6s;
+                transform-style: preserve-3d;
+                box-shadow: var(--shadow-sm);
+                border-radius: var(--radius-md);
+            }
+
+            .flashcard:hover .flashcard-inner,
+            .flashcard.flipped .flashcard-inner {
+                transform: rotateY(180deg);
+            }
+
+            .flashcard-front,
+            .flashcard-back {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                border-radius: var(--radius-md);
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border);
+            }
+
+            .flashcard-front {
+                background-color: var(--bg-card);
+                color: var(--text-main);
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+
+            .flashcard-back {
+                background-color: var(--primary);
+                color: white;
+                transform: rotateY(180deg);
+                font-size: 0.95rem;
+            }
+
+            .search-box {
+                width: 100%;
+                padding: 14px 20px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                background: var(--bg-body);
+                color: var(--text-main);
+                font-size: 1rem;
+                margin-bottom: 20px;
+                outline: none;
+                transition: var(--transition);
+            }
+
+            .search-box:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15);
+            }
+
+            .glossary-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 16px;
+            }
+
+            .glossary-item {
+                background: var(--bg-body);
+                padding: 18px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+            }
+
+            .glossary-term {
+                font-weight: 800;
+                color: var(--primary);
+                margin-bottom: 6px;
+                font-size: 1.05rem;
+            }
+
+            .quiz-section {
+                background: var(--bg-card);
+                border-radius: var(--radius-lg);
+                padding: 40px;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                margin-top: 40px;
+            }
+
+            .quiz-question-box {
+                margin-top: 25px;
+                padding-bottom: 20px;
+                border-bottom: 1px dashed var(--border);
+            }
+
+            .quiz-question-box:last-child {
+                border-bottom: none;
+            }
+
+            .quiz-question-title {
+                font-weight: 700;
+                color: var(--text-main);
+                font-size: 1.1rem;
+                margin-bottom: 14px;
+            }
+
+            .quiz-option {
+                background: var(--bg-body);
+                border: 2px solid var(--border);
+                border-radius: var(--radius-md);
+                padding: 14px 20px;
+                margin-bottom: 10px;
+                cursor: pointer;
+                transition: var(--transition);
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .quiz-option:hover {
+                border-color: var(--primary);
+                background: var(--primary-light);
+            }
+
+            .quiz-option.correct {
+                border-color: var(--success) !important;
+                background: #ecfdf5 !important;
+                color: #065f46 !important;
+            }
+
+            .quiz-option.incorrect {
+                border-color: var(--danger) !important;
+                background: #fef2f2 !important;
+                color: #991b1b !important;
+            }
+
+            .quiz-explanation {
+                margin-top: 10px;
+                padding: 12px 16px;
+                background: var(--primary-light);
+                border-left: 4px solid var(--primary);
+                border-radius: 4px;
+                font-size: 0.9rem;
+                color: var(--text-main);
+                display: none;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--primary);
+                color: white;
+                font-weight: 700;
+                padding: 14px 32px;
+                border-radius: var(--radius-md);
+                border: none;
+                cursor: pointer;
+                transition: var(--transition);
+                font-size: 1rem;
+                margin-top: 20px;
+                text-decoration: none;
+            }
+
+            .btn:hover {
+                background: var(--primary-hover);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .faq-item {
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                margin-bottom: 12px;
+                overflow: hidden;
+            }
+
+            .faq-header {
+                padding: 18px 24px;
+                background: var(--bg-card);
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: var(--transition);
+            }
+
+            .faq-header:hover {
+                background: var(--primary-light);
+            }
+
+            .faq-content {
+                padding: 0 24px;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease, padding 0.3s ease;
+                background: var(--bg-body);
+            }
+
+            .faq-item.active .faq-content {
+                padding: 18px 24px;
+                max-height: 300px;
+            }
+
+            .faq-icon {
+                transition: transform 0.3s ease;
+            }
+
+            .faq-item.active .faq-icon {
+                transform: rotate(180deg);
+            }
+
+            .resources-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .resource-card {
+                background: var(--bg-body);
+                padding: 24px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                text-align: center;
+                transition: var(--transition);
+            }
+
+            .resource-card:hover {
+                border-color: var(--primary);
+                transform: translateY(-3px);
+            }
+
+            .resource-card h4 {
+                font-size: 1.1rem;
+                margin-bottom: 8px;
+                color: var(--text-main);
+            }
+
+            .resource-card a {
+                color: var(--secondary);
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.9rem;
+                display: inline-block;
+                margin-top: 10px;
+            }
+
+            footer {
+                text-align: center;
+                padding: 60px 20px;
+                color: var(--text-muted);
+                border-top: 1px solid var(--border);
+                font-size: 0.95rem;
+                background: var(--bg-card);
+            }
+
+            #score-display {
+                font-weight: 800;
+                font-size: 1.25rem;
+                margin-top: 20px;
+                color: var(--primary);
+                padding: 15px;
+                background: var(--primary-light);
+                border-radius: var(--radius-md);
+                text-align: center;
+                display: none;
+            }
+
+            @media (max-width: 768px) {
+                h1 {
+                    font-size: 2.2rem;
+                }
+
+                .subtitle {
+                    font-size: 1.05rem;
+                }
+
+                .container {
+                    margin-top: -30px;
+                }
+
+                .card,
+                .form-card {
+                    padding: 24px;
+                }
+
+                .timeline::before {
+                    left: 20px;
+                }
+
+                .timeline-item {
+                    width: 100%;
+                    padding-left: 50px;
+                    padding-right: 0;
+                }
+
+                .timeline-item:nth-child(even) {
+                    left: 0;
+                    margin-left: 0;
+                    padding-left: 50px;
+                }
+
+                .timeline-dot {
+                    left: 12px !important;
+                    right: auto !important;
+                }
+
+                .quiz-section {
+                    padding: 24px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="floating-controls">
+            <button class="ai-toggle-btn" onclick="toggleAiModal()" title="AI Тарих Гид">🤖</button>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn"
+                title="Тақырыпты ауыстыру">🌙</button>
+        </div>
+
+        <div class="ai-modal-container" id="aiModal">
+            <div class="ai-modal-header">
+                <h3>🤖 AI Тарих Гид</h3>
+                <button class="ai-close-btn" onclick="toggleAiModal()">✕</button>
+            </div>
+            <div class="ai-modal-body" id="aiChatBox">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div
+                        style="background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.85rem;">
+                        AI</div>
+                    <div
+                        style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border); font-size: 0.9rem;">
+                        Саламатсыз ба! Мен осы оқу платформасының <b>AI Гидімін</b>.
+                        <br><br>
+                        Бұл сайтта сіз:
+                        <br>1. <b>8 модульдік</b> теориялық курсты оқи аласыз;
+                        <br>2. <b>Интерактивті таймлайн</b> мен флеш-карталарды қолдана аласыз;
+                        <br>3. <b>Анкета толтырып</b>, WhatsApp-қа тікелей өтінім жібере аласыз;
+                        <br>4. <b>Интерактивті тест</b> арқылы біліміңізді тексере аласыз.
+                        <br><br>
+                        Қазақстан тарихы бойынша сұрағыңыз болса, қоя беріңіз!
+                    </div>
+                </div>
+            </div>
+            <div class="ai-modal-footer">
+                <div class="ai-quick-tags">
+                    <span class="ai-tag" onclick="askAiQuick('Сайтпен таныстыр')">🌐 Сайтпен танысу</span>
+                    <span class="ai-tag" onclick="askAiQuick('Қазақ хандығы қашан құрылды?')">🏛️ Қазақ хандығы</span>
+                    <span class="ai-tag" onclick="askAiQuick('Алтын адам қайдан табылды?')">👑 Алтын адам</span>
+                    <span class="ai-tag" onclick="askAiQuick('Алаш орда үкіметі туралы айт')">📜 Алаш орда</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="aiInput" placeholder="Сұрақ қойыңыз..."
+                        style="flex: 1; padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); outline: none; font-size: 0.9rem;"
+                        onkeypress="if(event.key === 'Enter') sendAiMessage()">
+                    <button type="button" onclick="sendAiMessage()" class="btn"
+                        style="margin-top: 0; padding: 10px 16px; font-size: 0.9rem;">Жіберу</button>
+                </div>
+            </div>
+        </div>
+
+        <header>
+            <span class="header-badge">Авторлық онлайн курс — 2026</span>
+            <h1>Қазақстан тарихы: Көне заманнан бүгінгі күнге дейін</h1>
+            <p class="subtitle">Тарих пәні мұғаліміне, оқушыларға мен ҰБТ/ОЖСБ тапсырушыларға арналған интерактивті,
+                жүйелі және заманауи оқу-әдістемелік платформасы</p>
+
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value">8 Модуль</div>
+                    <div class="stat-label">Толық теория</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">50+ Тақырып</div>
+                    <div class="stat-label">Хронология</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">AI Гид</div>
+                    <div class="stat-label">Интерактивті көмекші</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+
+            <div class="form-card" id="register-section">
+                <h2 class="card-title">Курсқа тіркелу / Оқушы Анкетасы</h2>
+                <p>Төмендегі ақпараттарды толтырыңыз. «Жіберу» батырмасын басқанда деректер тікелей
+                    <b>7-705-613-911-44</b> WhatsApp номерине чат арқылы дайын мәтін түрінде жіберіледі:</p>
+
+                <form id="studentForm" onsubmit="sendToWhatsApp(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fullname">Аты-жөніңіз (Ф.И.О):</label>
+                            <input type="text" id="fullname" placeholder="Мысалы: Арман Әлиев" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Телефон / WhatsApp номеріңіз:</label>
+                            <input type="tel" id="phone" placeholder="Мысалы: +7 777 123 45 67" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="grade">Сыныбыңыз / Мәртебеңіз:</label>
+                            <select id="grade" required>
+                                <option value="">Таңдаңыз...</option>
+                                <option value="9-сынып">9-сынып оқушысы</option>
+                                <option value="10-сынып">10-сынып оқушысы</option>
+                                <option value="11-сынып">11-сынып оқушысы (ҰБТ)</option>
+                                <option value="Колледж/Студент">Колледж / Студент</option>
+                                <option value="Мұғалім">Мұғалім / Ұстаз</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city">Қалаңыз / Мектебіңіз:</label>
+                            <input type="text" id="city" placeholder="Мысалы: Ақтау қ., №15 мектеп" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="goal">Оқу мақсатыңыз бен тілегіңіз:</label>
+                        <textarea id="goal" rows="3"
+                            placeholder="Мысалы: ҰБТ-дан 45+ балл жинау, тарих пәнінен білімді тереңдету..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-whatsapp">
+                        📱 Анкетаны WhatsApp арқылы жіберу (7-705-613-911-44)
+                    </button>
+                </form>
+            </div>
+
+            <div class="grid" style="margin-top: 35px;">
+                <section class="card">
+                    <h2 class="card-title">Курс туралы және мақсаты</h2>
+                    <p>Бұл оқу курсы оқушылар мен студенттерге Қазақстан тарихының негізгі кезеңдерін жүйелі түрде
+                        меңгеруге, тарихи оқиғаларға объективті сараптама жасауға және аналитикалық ойлауды дамытуға
+                        бағытталған.</p>
+                    <p>Курс құрылымы Қазақстан Республикасының Жалпыға міндетті білім беру стандартына (ЖМББС) және ҰБТ
+                        бағдарламасына толық сәйкес келеді.</p>
+                </section>
+
+                <section class="card">
+                    <h2 class="card-title">Күтілетін оқу нәтижелері</h2>
+                    <ul>
+                        <li>Тарихи кезеңдер мен оқиғалар хронологиясын еркін білу;</li>
+                        <li>Тарихи тұлғалардың мемлекеттіліктегі рөлін объективті бағалау;</li>
+                        <li>Дереккөздермен, карталармен және мұрағат құжаттарымен жұмыс істеу;</li>
+                        <li>Тесттер, кейстер мен практикалық тапсырмаларды жоғары деңгейде орындау.</li>
+                    </ul>
+                </section>
+            </div>
+
+            <div class="card" style="margin-bottom: 35px;">
+                <h2 class="card-title">Оқу көрнекілігі мен көрнекі құралдар</h2>
+                <figure class="hero-figure">
+                    <img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=1200&q=80"
+                        alt="Тарихи карта және оқу материалдары">
+                    <figcaption>Көрнекілік — тарихи оқиғаларды терең де сапалы меңгерудің басты құралы</figcaption>
+                </figure>
+            </div>
+
+            <div class="card" style="margin-bottom: 35px;">
+                <h2 class="card-title">Негізгі тақырыптар мен оқу модульдері</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Модуль №</th>
+                                <th>Тақырып атауы</th>
+                                <th>Меңгерілетін негізгі ұғымдар</th>
+                                <th>Форматы</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1-модуль</strong></td>
+                                <td>Ежелгі Қазақстан: Сақ, Ғұн және Үйсін дәуірі</td>
+                                <td>Аң стилі, Әскери-демократия, «Алтын адам», Шілікті, Есік</td>
+                                <td>Дәріс + Карта</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2-модуль</strong></td>
+                                <td>Ортағасырлық мемлекеттер және Алтын Орда кезеңі</td>
+                                <td>Түркі қағанаты, Жібек жолы, Ұлы Ұлыс, Бату хандар саясаты</td>
+                                <td>Видео-дәріс + Кесте</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3-модуль</strong></td>
+                                <td>Қазақ хандығының құрылуы және хандар саясаты</td>
+                                <td>Керей мен Жәнібек, Қасым ханның қасқа жолы, Абылай хан</td>
+                                <td>Семинар + Портреттер</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4-модуль</strong></td>
+                                <td>Қазақстан патшалық Ресей империясы құрамында</td>
+                                <td>Кенесары көтерілісі, Ережелер, Түркістан генерал-губернаторлығы</td>
+                                <td>Талдау + Тест</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5-модуль</strong></td>
+                                <td>ХХ ғасыр басындағы Қазақстан және Алаш қозғалысы</td>
+                                <td>Алаш Орда, Ә.Бөкейханов, Түркістан автономиясы, Репрессия</td>
+                                <td>Дереккөздермен жұмыс</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6-модуль</strong></td>
+                                <td>Кеңестік Қазақстан: Социалистік қайта құрулар мен Ұлы Отан соғысы</td>
+                                <td>Ұжымдастыру, Тәркілеу, Тың игеру, Ә.Молдағұлова, Б.Момышұлы</td>
+                                <td>Мұрағат құжаттары</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7-модуль</strong></td>
+                                <td>Қазақстан қайта құру жылдарында және Желтоқсан оқиғасы</td>
+                                <td>1986 жылғы Желтоқсан, Семей полигоны, Невада-Семей, Желтоқсан қаһармандары</td>
+                                <td>Кейс-стади</td>
+                            </tr>
+                            <tr>
+                                <td><strong>8-модуль</strong></td>
+                                <td>Тәуелсіз Қазақстан: Қалыптасуы мен заманауи дамуы</td>
+                                <td>Конституция, Теңге, Астана, Сыртқы саясат, Заманауи даму</td>
+                                <td>Практикум + Жоба</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 35px;">
+                <h2 class="card-title">Қазақстан тарихының басты хронологиялық белестері</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">б.з.б. VIII - III ғғ.</div>
+                            <h3>Сақ тайпалық одақтары</h3>
+                            <p>Еуразия даласындағы алғашқы көшпелі мемлекеттік құрылымдардың пайда болуы және «Аң стилі»
+                                өнерінің гүлденуі.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">552 – 603 жж.</div>
+                            <h3>Түркі қағанаты</h3>
+                            <p>Алтайдан Қара теңізге дейінгі ұлы империяның құрылуы, жазба мәдениеттің (Орхон-Енисей)
+                                қалыптасуы.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">1465 жыл</div>
+                            <h3>Қазақ хандығының құрылуы</h3>
+                            <p>Керей мен Жәнібек хандардың Өзбек хандығынан бөлініп, Шу мен Қозыбасы өңірінде дербес
+                                мемлекет іргесін қалауы.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">1917 жыл</div>
+                            <h3>Алаш Автономиясының жариялануы</h3>
+                            <p>ІІ Орынбор съезінде Алашорда үкіметінің құрылуы және ұлттық зиялылардың мемлекеттікті
+                                қайта жаңғыртуы.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">1991 жыл, 16 желтоқсан</div>
+                            <h3>Мемлекеттік Тәуелсіздікті жариялау</h3>
+                            <p>Қазақстан Республикасының Тәуелсіздігі туралы Конституциялық Заңның қабылдануы.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 35px;">
+                <h2 class="card-title">Интерактивті флеш-карталар (Даталар мен Тұлғалар)</h2>
+                <p>Карточканың арғы бетіндегі жауапты басып көріңіз:</p>
+                <div class="flashcards-container">
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                1723–1727 жж.
+                            </div>
+                            <div class="flashcard-back">
+                                «Ақтабан шұбырынды, Алқакөл сұлама» — Жоңғар шапқыншылығы жылдары.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                «Жеті Жарғы»
+                            </div>
+                            <div class="flashcard-back">
+                                Тәуке ханның тусында қабылданған дала заңдар жинағы.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                1837–1847 жж.
+                            </div>
+                            <div class="flashcard-back">
+                                Кенесары Қасымұлы бастаған ұлт-азаттық көтеріліс.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                1511–1518 жж.
+                            </div>
+                            <div class="flashcard-back">
+                                Қасым ханның билігі. Қазақ хандығының халқы 1 миллионға жетті.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 35px;">
+                <h2 class="card-title">Тарихи терминдер мен ұғымдар сөздігі</h2>
+                <input type="text" class="search-box" id="glossarySearch"
+                    placeholder="Терминді іздеу (мысалы: Яса, Құрылтай, Автономия)..." onkeyup="filterGlossary()">
+                <div class="glossary-grid" id="glossaryList">
+                    <div class="glossary-item">
+                        <div class="glossary-term">Яса (Жасақ)</div>
+                        <p>Шыңғыс хан тұсында қабылданған империяның заңдар жинағы мен әскери-әкімшілік ережелері.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">Құрылтай</div>
+                        <p>Көшпелі халықтардағы ең маңызды мемлекеттік, әскери және саяси мәселелерді шешетін шонжарлар
+                            жиыны.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">Әскери-демократия</div>
+                        <p>Тайпалық одақтардағы соғыс пен бейбітшілік мәселелерін халық жиналысында шешу жүйесі.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">Барщина</div>
+                        <p>Шаруалардың феодал жеріндегі тегін еңбегі мен міндеткерлігі.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">Ашаршылық (1931-1933)</div>
+                        <p>Кеңестік ұжымдастыру мен тәркілеу салдарынан қазақ даласында орын алған ұлттық қасірет.</p>
+                    </div>
+                    <div class="glossary-item">
+                        <div class="glossary-term">Автономия</div>
+                        <p>Мемлекет құрамындағы белгілі бір аймақтың өзін-өзі басқару құқығы мен дербестігі.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-section">
+                <h2 class="card-title">Интерактивті білімді тексеру тесті</h2>
+                <p>Өз біліміңізді тексеріп, әр сұрақтың тарихи түсініктемесін оқыңыз:</p>
+
+                <div id="quiz-container">
+                    <div class="quiz-question-box">
+                        <p class="quiz-question-title">1. Қазақ хандығы қай жылы және қай өңірде құрылды?</p>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">A) 1723 ж. Түркістан маңында
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q1')">B) 1465 ж. Шу мен Қозыбасы
+                            өңірінде</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">C) 1206 ж. Орхон өзені бойында
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">D) 1511 ж. Сығанақ қаласында
+                        </div>
+                        <div class="quiz-explanation" id="q1-exp">Дұрыс жауап: B! Керей мен Жәнібек хандар 1465 жылы
+                            Әбілқайыр хандығынан бөлініп, Моғолстанның батысындағы Шу мен Қозыбасы өңірінде Қазақ
+                            хандығының іргесін қалады.</div>
+                    </div>
+
+                    <div class="quiz-question-box">
+                        <p class="quiz-question-title">2. Сақ тайпаларының «Алтын адамы» 1969 жылы қай қорғаннан
+                            табылды?</p>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q2')">A) Есік қорғаны (Кемал Ақышев)
+                        </div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">B) Шілікті қорғаны</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">C) Берел қорғаны</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">D) Бесшатыр қорғаны</div>
+                        <div class="quiz-explanation" id="q2-exp">Дұрыс жауап: A! «Алтын адам» 1969 жылы Алматы
+                            маңындағы Есік қорғанынан белгілі археолог Кемал Ақышевтің басшылығымен табылды.</div>
+                    </div>
+
+                    <div class="quiz-question-box">
+                        <p class="quiz-question-title">3. XIX ғасырдағы бүкіл қазақ даласын қамтыған ең ірі ұлт-азаттық
+                            көтерілістің басшысы кім?</p>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">A) Сырым Датұлы</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">B) Исатай Тайманұлы</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q3')">C) Кенесары Қасымұлы</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">D) Жанқожа Нұрмұхамедұлы</div>
+                        <div class="quiz-explanation" id="q3-exp">Дұрыс жауап: C! 1837–1847 жылдардағы Кенесары Қасымұлы
+                            бастаған көтеріліс Қазақстанның барлық үш жүзін қамтыған соңғы жалпыұлттық көтеріліс болды.
+                        </div>
+                    </div>
+
+                    <div class="quiz-question-box">
+                        <p class="quiz-question-title">4. 1917 жылы желтоқсанда құрылған Алашорда үкіметінің төрағасы
+                            болып кім сайланды?</p>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q4')">A) Әлихан Бөкейханов</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">B) Ахмет Байтұрсынұлы</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">C) Міржақып Дулатұлы</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">D) Мұстафа Шоқай</div>
+                        <div class="quiz-explanation" id="q4-exp">Дұрыс жауап: A! ІІ Жалпықазақ съезінде Әлихан
+                            Бөкейханов баламалы негізде Алаш Автономиясы Ұлт кеңесінің (Алашорда) төрағасы болып
+                            сайланды.</div>
+                    </div>
+
+                    <div class="quiz-question-box">
+                        <p class="quiz-question-title">5. Тәуелсіз Қазақстанның ұлттық валютасы — Теңге қай жылы
+                            айналымға енгізілді?</p>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">A) 1991 ж. 16 желтоқсан</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">B) 1992 ж. 4 маусым</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q5')">C) 1993 ж. 15 қараша</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">D) 1995 ж. 30 тамыз</div>
+                        <div class="quiz-explanation" id="q5-exp">Дұрыс жауап: C! 1993 жылдың 15 қарашасында
+                            Қазақстанның төл валютасы — теңге айналымға енді. Сондықтан бұл күн қаржыгерлер күні болып
+                            аталып өтіледі.</div>
+                    </div>
+                </div>
+
+                <div id="score-display"></div>
+                <button type="button" class="btn" onclick="resetQuiz()" style="display: none;" id="resetQuizBtn">Тесті
+                    қайта өту</button>
+            </div>
+
+            <div class="card" style="margin-top: 35px;">
+                <h2 class="card-title">Жиі қойылатын сұрақтар (FAQ)</h2>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">
+                        <span>Курсты оқып шығу үшін қанша уақыт қажет?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-content">
+                        <p>Курс 8 негізгі модульден тұрады. Аптасына 2-3 сағат бөлсеңіз, барлық теориялық және
+                            интерактивті материалдарды 4-6 апта ішінде толық меңгеріп шығуға болады.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">
+                        <span>Бұл платформа ҰБТ-ға дайындалуға жарай ма?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-content">
+                        <p>Иә, платформадағы барлық сұрақтар, кестелер мен хронология Ұлттық тестілеу орталығының (ҰТО)
+                            ҰБТ спецификациясына толық сай келеді.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-header" onclick="toggleFaq(this)">
+                        <span>Мұғалімдер үшін қандай пайдалы ресурстар бар?</span>
+                        <span class="faq-icon">▼</span>
+                    </div>
+                    <div class="faq-content">
+                        <p>Платформада Қайталанбалы оқу жоспарлары (ҚМЖ), сабақ презентациялары және тест базасын жүктеп
+                            алу мүмкіндігі қарастырылған.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 35px;">
+                <h2 class="card-title">Пайдалы ресурстар мен ғылыми дереккөздер</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <h4>E-History.kz</h4>
+                        <p>Қазақстан тарихының ресми ғылыми-популярлы порталы</p>
+                        <a href="https://e-history.kz" target="_blank">Сайтқа өту &rarr;</a>
+                    </div>
+                    <div class="resource-card">
+                        <h4>ҚР Мемлекеттік архиві</h4>
+                        <p>Тарихи түпнұсқа құжаттар мен архив қорлары</p>
+                        <a href="#" onclick="alert('Ресми архив порталына өту'); return false;">Деректерді көру
+                            &rarr;</a>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Онлайн академия</h4>
+                        <p>Электронды оқулықтар мен карталар базасы</p>
+                        <a href="#" onclick="alert('Оқулықтар қоры ашылуда'); return false;">Оқулықтар &rarr;</a>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Қазақстан Энциклопедиясы</h4>
+                        <p>Тарихи тұлғалар мен оқиғалар реестрі</p>
+                        <a href="#" onclick="alert('Энциклопедиялық база'); return false;">Іздеу &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 35px; text-align: center;">
+                <h2 class="card-title" style="justify-content: center;">Курс қорытындысы мен нәтижесі</h2>
+                <p style="max-width: 800px; margin: 0 auto 20px;">Бұл курс білім алушыларға Қазақстан тарихы бойынша
+                    терең әрі жүйелі білім алып, мемлекеттік емтихандар мен ҰБТ сынақтарына жоғары деңгейде дайындалуға
+                    мүмкіндік береді.</p>
+                <button type="button" class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">Парақша
+                    басына оралу</button>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Авторлық оқу курсы. Тарих пәні мұғаліміне арналған веб-платформа. Барлық құқықтар қорғалған.
+            </p>
+        </footer>
+
+        <script>
+            function toggleAiModal() {
+                const modal = document.getElementById('aiModal');
+                if (modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                } else {
+                    modal.style.display = 'flex';
+                }
+            }
+
+            function sendToWhatsApp(event) {
+                event.preventDefault();
+
+                const fullname = document.getElementById('fullname').value;
+                const phone = document.getElementById('phone').value;
+                const grade = document.getElementById('grade').value;
+                const city = document.getElementById('city').value;
+                const goal = document.getElementById('goal').value;
+
+                const whatsappNumber = "770561391144";
+
+                const message = `Қайырлы күн! Мен «Қазақстан тарихы» курсына тіркелу үшін анкета толтырдым:%0A%0A` +
+                    `👤 *Аты-жөні:* ${encodeURIComponent(fullname)}%0A` +
+                    `📞 *Телефон:* ${encodeURIComponent(phone)}%0A` +
+                    `🎓 *Сыныбы/Мәртебесі:* ${encodeURIComponent(grade)}%0A` +
+                    `📍 *Қаласы/Мектебі:* ${encodeURIComponent(city)}%0A` +
+                    `🎯 *Мақсаты:* ${encodeURIComponent(goal ? goal : "Курсқа қатысу")}`;
+
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${message}`;
+
+                window.open(whatsappUrl, '_blank');
+            }
+
+            function sendAiMessage() {
+                const input = document.getElementById('aiInput');
+                const chatBox = document.getElementById('aiChatBox');
+                const text = input.value.trim();
+
+                if (!text) return;
+
+                chatBox.innerHTML += `
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 10px;">
+                    <div style="background: var(--primary); color: white; padding: 10px 14px; border-radius: var(--radius-md); max-width: 80%; font-size: 0.9rem;">
+                        ${text}
+                    </div>
+                </div>
+            `;
+
+                input.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                setTimeout(() => {
+                    let reply = "Бұл сұрақ бойынша платформамыздың тиісті модуліне үңіліп көріңіз немесе глоссарийден іздеңіз.";
+                    const lowerText = text.toLowerCase();
+
+                    if (lowerText.includes('таныс') || lowerText.includes('сайт') || lowerText.includes('платформа')) {
+                        reply = "Бұл платформа — Қазақстан тарихын оңай әрі жүйелі меңгеруге арналған интерактивті ресурс. Өзіңізге керекті 8 оқу модулін өтіп, тарихи терминдер мен хронологияны жаттап, біліміңізді тест арқылы тексере аласыз!";
+                    } else if (lowerText.includes('қазақ хандығы') || lowerText.includes('құрылды')) {
+                        reply = "Қазақ хандығы 1465 жылы Шу мен Қозыбасы өңірінде Керей мен Жәнібек хандар тарапынан құрылған.";
+                    } else if (lowerText.includes('алтын адам')) {
+                        reply = "Алтын адам 1969 жылы Алматы маңындағы Есік қорғанынан археолог Кемал Ақышевтің басшылығымен табылды.";
+                    } else if (lowerText.includes('алаш')) {
+                        reply = "Алаш автономиясы 1917 жылы желтоқсанда ІІ Жалпықазақ съезінде жарияланды. Төрағасы — Әлихан Бөкейханов.";
+                    } else if (lowerText.includes('сәлем') || lowerText.includes('аман')) {
+                        reply = "Саламатсыз ба! Бүгінгі тарих сабағыңызға сәттілік тілеймін. Маған кез келген тарихи сұрақ қоя аласыз!";
+                    }
+
+                    chatBox.innerHTML += `
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.85rem;">AI</div>
+                        <div style="background: var(--bg-card); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); max-width: 80%; font-size: 0.9rem;">
+                            ${reply}
+                        </div>
+                    </div>
+                `;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 500);
+            }
+
+            function askAiQuick(question) {
+                document.getElementById('aiInput').value = question;
+                sendAiMessage();
+            }
+
+            let answeredQuestions = {};
+            let score = 0;
+            const totalQuestions = 5;
+
+            function checkAnswer(element, isCorrect, qId) {
+                if (answeredQuestions[qId]) return;
+
+                answeredQuestions[qId] = true;
+                const parent = element.parentElement;
+                const options = parent.querySelectorAll('.quiz-option');
+                const explanation = document.getElementById(qId + '-exp');
+
+                options.forEach(opt => opt.style.pointerEvents = 'none');
+
+                if (isCorrect) {
+                    element.classList.add('correct');
+                    score++;
+                } else {
+                    element.classList.add('incorrect');
+                    options.forEach(opt => {
+                        if (opt.getAttribute('onclick').includes('true')) {
+                            opt.classList.add('correct');
+                        }
+                    });
+                }
+
+                if (explanation) {
+                    explanation.style.display = 'block';
+                }
+
+                if (Object.keys(answeredQuestions).length === totalQuestions) {
+                    const scoreDisplay = document.getElementById('score-display');
+                    scoreDisplay.style.display = 'block';
+                    scoreDisplay.innerText = `Сіздің нәтижеңіз: ${score} / ${totalQuestions} дұрыс жауап! (${Math.round((score / totalQuestions) * 100)}%)`;
+                    document.getElementById('resetQuizBtn').style.display = 'inline-block';
+                }
+            }
+
+            function resetQuiz() {
+                answeredQuestions = {};
+                score = 0;
+                const options = document.querySelectorAll('.quiz-option');
+                options.forEach(opt => {
+                    opt.classList.remove('correct', 'incorrect');
+                    opt.style.pointerEvents = 'auto';
+                });
+                const explanations = document.querySelectorAll('.quiz-explanation');
+                explanations.forEach(exp => exp.style.display = 'none');
+
+                document.getElementById('score-display').style.display = 'none';
+                document.getElementById('resetQuizBtn').style.display = 'none';
+            }
+
+            function filterGlossary() {
+                const input = document.getElementById('glossarySearch').value.toLowerCase();
+                const items = document.querySelectorAll('.glossary-item');
+
+                items.forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    if (text.includes(input)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            function toggleFaq(headerElement) {
+                const item = headerElement.parentElement;
+                item.classList.toggle('active');
+            }
+
+            function toggleTheme() {
+                const html = document.documentElement;
+                const themeBtn = document.getElementById('themeBtn');
+                if (html.getAttribute('data-theme') === 'dark') {
+                    html.setAttribute('data-theme', 'light');
+                    themeBtn.innerText = '🌙';
+                } else {
+                    html.setAttribute('data-theme', 'dark');
+                    themeBtn.innerText = '☀️';
+                }
+            }
+
+            window.onscroll = function () {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                document.getElementById("progressBar").style.width = scrolled + "%";
+            };
+        </script>
+    </body>
+
+</html>
